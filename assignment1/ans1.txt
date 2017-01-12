@@ -1,0 +1,31 @@
+1.
+man -K specificWord
+
+2.
+Found using "which cp" and "which wc":
+cp is located at /bin/
+wc is located at /usr/bin/wc
+
+3.
+found using "find /usr/bin -executable -name '?'"
+w  -->  Show who is logged on and what they are doing
+X  -->  A portable, network-transparent window system
+
+purposes found using man
+
+4.
+Symbolic link found using "ls -l | grep emacs"
+program actually executed is /etc/alternatives/emacs
+
+5.
+found using man page of chmod
+g+s means adding permission to set id for groups and o-x means subtracting 
+permission to execute for others
+
+6.
+found using man page of find and searching for time (mtime flag)
+-mtime 21
+
+7.
+
+
