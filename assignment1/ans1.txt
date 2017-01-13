@@ -19,13 +19,31 @@ program actually executed is /etc/alternatives/emacs
 
 5.
 found using man page of chmod
-g+s means adding permission to set id for groups and o-x means subtracting 
+g+s means adding permission to set uid for groups and o-x means subtracting 
 permission to execute for others
 
 6.
 found using man page of find and searching for time (mtime flag)
--mtime 21
+-mtime -21
 
 7.
+found using -mtime -21 -type d
+cs35l
+
+8.
+found using:
+which find
+find /bin -type l | wc
+
+20 symbolic links found
+
+9.
+found using:
+man ls
+find -type f | xargs ls /usr/lib -lt | tail -1
+
+stdio-lock.h
+
+10.
 
 
