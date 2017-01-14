@@ -29,7 +29,10 @@ cs35l
 stdio-lock.h
 
 10.
-locale displays information about the list of all available locales. 
+locale displays information about the list of all available locales. It displays a list of environment variables as follows:
+LANG, LC_CTYPE, LC_NUMERIC, LC_TIME, LC_COLLATE, LC_MONETARY, LC_MESSAGES, 
+LC_PAPER, LC_NAME, LC_ADDRESS, LC_TELEPHONE, LC_MEASUREMENT, 
+LC_IDENTIFICATION and LC_ALL.
 
 11.
 18

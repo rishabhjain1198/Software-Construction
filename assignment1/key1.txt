@@ -1,6 +1,7 @@
 LAB 
 1.
 m a n SP m a n Enter / s e a r c h Enter n n n q
+m a n SP - K SP s p e c i f i c W o r d Enter
 
 2.
 w h i c h SP c p Enter
@@ -34,7 +35,8 @@ f i n d SP - t y p e SP f SP | SP x a r g s SP l s SP / u s r / l i b SP - l t S
 t a i l SP - 1 Enter
 
 10.
-m a n SP l o c a l e Enter
+m a n SP l o c a l e Enter q
+l o c a l e Enter
 
 11.
 e m a c s Enter C-h a s o r t Enter C-x RightArrow C-v
