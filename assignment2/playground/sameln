@@ -1,0 +1,22 @@
+FILES="./*"
+for f in $FILES
+do
+	if [[ -f "$f" ]] ; then
+	echo $f
+	switch=1
+
+	for g in $FILES
+	do
+		if [[ "$switch" == "0" ]]
+		then
+			echo $g
+		fi
+
+
+		if [[ "$f" == "$g" ]]
+		then
+			switch=0
+		fi
+	done	
+	fi
+done
