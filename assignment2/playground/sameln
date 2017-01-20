@@ -3,8 +3,8 @@ FILES="$1/*"
 for f in $FILES
 do
 	if [[ -f "$f" ]] ; then
-	switch=1
-
+	switch=1			
+	
 	for g in $FILES
 	do
 		if [[ "$switch" == "0" ]]
@@ -13,14 +13,26 @@ do
 			then
 				#MATCH FOUND
 				#TIME TO TURN STUFF INTO LINKS
-				rm $g
-				ln $f $g
+
+				first="${g##*/}"
+				first="${first:0:1}"
+
+				if [[ "$first" == "." ]]
+				then
+					#DOT FOUND, KILL F
+					rm $f
+					ln $f $g
+				else
+					#NO DOT FOUND, KILL G
+					rm $g
+					ln $f $g
+				fi
 			fi 
 
 		fi
 
 
-		if [[ "$f" == "$g" ]]
+		if [[ "$f" == "$g" ]] && cmp -s "$f" "$g"
 		then
 			switch=0
 		fi
