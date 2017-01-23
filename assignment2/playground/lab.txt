@@ -1,0 +1,67 @@
+locale
+export LC_ALL=‘C’
+sort /usr/share/dict/words > words
+wget http://web.cs.ucla.edu/classes/winter17/cs35L/assign/assign2.html
+
+tr -c 'A-Za-z' '[\n*]' < assign2.html
+Everything which is not an alphabet is replaced by a newline character.
+
+tr -cs 'A-Za-z' '[\n*]' < assign2.html
+All non alphabet characters were replaced by newline characters, and then all newline characters are replaced by a single newline character at the beginning.
+
+tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort
+The output of the previous command is sorted lexicographically.
+
+tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u 
+Removes multiple occurrences of words in the output of the previous command.
+
+tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u | comm - words 
+Finds common words in the output of the previous command and the sorted list of words we’d created earlier. First column contains words contained by the file words, second column has words contained by output of the previous command, and the third column contains common words.
+
+tr -cs 'A-Za-z' '[\n*]' < assign2.html | sort -u | comm -23 - words 
+This removes words which would have otherwise occurred in the second and third column of the output of the previous command.
+
+wget http://mauimapp.com/moolelo/hwnwdseng.htm 
+
+grep -E '<td>.*<\/td>' hwnwdseng.htm > out1.htm 
+This command will remove everything except for <td>word</td> and some instances of <td></td> 
+
+sed '/<td><\/td>/d' out1.htm > out2.htm This command will leave only <td>word</td> and remove <td></td> 
+
+sed 's/<td>\(.*\)<\/td>/\1/g' out2.htm > out3.htm This will remove the <td> and </td>, leaving only the text in the middle 
+
+sed -n 2~2p out3.htm > out4.htm. This will extract only the Hawaiian words. Print alternate lines starting from second 
+
+sed 's/<u>\(.\)<\/u>/\1/g' out4.htm > out5.htm 
+treat "<u>a</u>" as if it were just the single character ‘a’
+ 
+tr , '\n' < out5.htm > out6.htm Some words contain commas, we separate them with a newline instead of the comma
+
+sed 's/^[ \t]*//' out6.htm > out7.htm 
+Eliminate blank space at the beginning of every line, if applicable
+
+tr ' ' '\n' < out7.htm | sed '/^$/d' > out8.htm 
+^$ is begining and end of line and it contains nothing in between, meaning it should be empty
+
+sed "s/\`/'/g" out8.htm > out9.htm treat ` (ASCII grave accent) as if it were '
+
+tr A-Z a-z < out9.htm >out10.htm Treat upper case letters as if they were lower case 
+
+sed "/[^pkmnwlhaeiou']/d" out10.htm > out11.htm This rejects all entries that contain non-Hawaiian letters
+ 
+sort -u out11.htm > hwords 
+
+grep -E '<td>.*<\/td>' | sed '/<td><\/td>/d' | sed 's/<td>\(.*\)<\/td>/\1/g' | sed -n 2~2p | sed 's/<u>\(.\)<\/u>/\1/g' | tr , '\n' | sed -e 's/^[ \t]*//' | tr ' ' '\n' | sed '/^$/d' | sed "s/\`/'/g" | tr A-Z a-z | sed "/[^pkmnwlhaeiou']/d" | sort -u 
+
+This was Hawaiian Spell checker 
+
+tr '[:upper:]' '[:lower:]' < infile | tr -cs "pkmnwlhae'iou" "[\n*]" | sort -u | comm -23 - hwords 
+Convert upper to lower. Ignore english words. Sort and also Remove duplicate new lines. Compare. 
+
+This was English Spell Checker
+ tr '[:upper:]' '[:lower:]' < infile | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - hwords 
+
+tr '[:upper:]' '[:lower:]' < hwords | tr -cs "pkmnwlhae'iou" "[\n*]" | sort -u | comm -23 - hwords 
+Outputs nothing
+
+
