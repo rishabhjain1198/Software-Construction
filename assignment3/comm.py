@@ -3,7 +3,7 @@ import sys, string, locale
 from optparse import OptionParser
 
 class compare:
-    def __init__(self,file1, file2):
+	def __init__(self,file1, file2):
 		try:
 			if file1 == "-":
 				f1 = sys.stdin
@@ -28,12 +28,10 @@ class compare:
 			f2.close()
 		except IOError as e:
 			parser = OptionParser()
-			parser.error("IO error({0}): {1}".
-						  format(e.errno, e.strerror))
-    def startit(self):
+			parser.error("IO error({0}): {1}".format(e.errno, e.strerror))
+	def startit(self):
 
-		print(self.lines1)
-		print(self.lines2)
+
 		firstcount = 0
 		secondcount = 0
 
@@ -42,7 +40,7 @@ class compare:
 			if self.lines1[firstcount] > self.lines2[secondcount]:
 				found = False
 				word1 = self.lines2[0]
-				print(word1)
+
 				for word2 in self.lines1:
 					if word1 == word2:
 						found = True
@@ -57,12 +55,12 @@ class compare:
 					self.col2.append(word1)
 					self.col3.append("")
 					self.lines2 = [x for x in self.lines2 if x != word1]
-					print(self.lines2)
+
 
 			else:
 				found=False
 				word1 = self.lines1[firstcount]
-				print(word1)
+
 				for word2 in self.lines2:
 					if word1 == word2:
 						found=True
@@ -77,7 +75,7 @@ class compare:
 					self.col2.append("")
 					self.col3.append("")
 					self.lines1 = [x for x in self.lines1 if x != word1]
-					print(self.lines1)
+
 
 		while(self.lines1 != []):
 			word12 = self.lines1[firstcount]
@@ -87,19 +85,57 @@ class compare:
 			self.lines1 = [x for x in self.lines1 if x != word12]
 
 		while(self.lines2 != []):
-			print("print the rest of lines2 here")
+
 			word21 = self.lines2[firstcount]
 			self.col2.append(word21)
 			self.col1.append("")
 			self.col3.append("")
 			self.lines2 = [x for x in self.lines1 if x != word21]
 
-		print(self.col1)
 
 
 
+	def unso(self):
+		while (len(self.lines1)):
+			wrd1 = self.lines1[0]
+			if len(self.lines2) == 0:
+				self.col1.append(wrd1)
+				self.col2.append("")
+				self.col3.append("")
+				self.lines1 = [x for x in self.lines1 if x != wrd1]
+			else:
+				fnd = False
+				for wrd2 in self.lines2:
+					if wrd1 == wrd2:
+						fnd = True
+						self.col3.append(wrd1)
+						self.col2.append("")
+						self.col1.append("")
+						self.lines1 = [x for x in self.lines1 if x != wrd1]
+						self.lines2 = [x for x in self.lines2 if x != wrd2]
+				if fnd == False:
+					self.col1.append(wrd1)
+					self.col2.append("")
+					self.col3.append("")
+					self.lines1 = [x for x in self.lines1 if x != wrd1]
+
+		while (len(self.lines2)):
+			wrrd1 = self.lines2[0]
+			self.col2.append(wrrd1)
+			self.col1.append("")
+			self.col3.append("")
+			self.lines2 = [x for x in self.lines2 if x != wrrd1]
 
 
+
+	def printit(self):
+		#print the cols now
+
+		while(len(self.col1)):
+			print(self.col1[0]+"	"+self.col2[0]+"	"+self.col3[0])
+			del self.col1[0]
+			del self.col2[0]
+			del self.col3[0]
 
 def main():
 	locale.setlocale(locale.LC_ALL, 'C')
@@ -135,12 +171,14 @@ def main():
 	try:
 		comparee = compare(args[0], args[1])
 		if unsort:
-			print("add implementation for unsorted file")
-			comparee.startit()
+
+			comparee.unso()
 		else:
-			print("add implementation for sorted file")
-        	comparee.startit()
-		print("actually print the lists now")
+			comparee.startit()
+
+		#print the lists now
+		comparee.printit()
+
 	except IOError as e:
 		parser.error("I/O error({0}): {1}".format(e.errno, e.strerror))
 
