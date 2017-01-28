@@ -1,0 +1,2 @@
+3. IndexError: list index out of range
+4. SyntaxError
