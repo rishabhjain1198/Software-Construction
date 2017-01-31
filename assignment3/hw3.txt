@@ -1,2 +1,21 @@
-3. IndexError: list index out of range
-4. SyntaxError
+1.) The line is repeated twice and there is a goto statement in a switch statement. Because it is part of a switch  statement, it was not necessary to remove it.
+
+2.) The new patched version of the coreutils-7.6 assumes the reader is
+accustomed to reading the date in English, which may not be the case if my
+company was to be working with international clients/colleagues and so may
+create an aura of confusion due to the timestamp format. 
+
+3.) 
+File "/usr/local/cs/Python-2.7.10/lib/python2.7/random.py", line 275, in choice
+    return seq[int(self.random() * len(seq))]  # raises IndexError if seq is 
+    empty
+    IndexError: list index out of range
+Because the seq is empty we get the index error.
+
+4.) Python3 deprecated automatic tuple unpacking, and so the parameter
+(errno, strerror) passed in an exception gives an error as this is a tuple.
+  File "randline.py", line 65
+    except IOError as (errno, strerror):
+                      ^
+SyntaxError: invalid syntax
+

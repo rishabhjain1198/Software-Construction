@@ -1,1 +1,45 @@
 
+wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz
+tar -xzvf coreutils-7.6.tar.gz
+
+./configure --prefix=/u/cs/ugrad/rishabhj/coreutilsInstall
+
+make
+make install
+
+cd ~/coreutilsInstall/bin
+./ls
+
+After noticing the issue with th ls command in coreutils 7.6, we begin to 
+patch the issue up. We do this by cd'ing back into coreutils-7.6
+directory and creating a file called patch_file with the copied and
+pasted text from Brady's patch. We then run the following command within
+the current directory:
+patch -p1 < patch_file
+
+And we then finally run the make command. Now we see that the ls command in
+the coreutils-7.6/src/ directory follows the behaviour of displaying the
+timestamp Month-Date-Year/Hour instead of Year-Month-Date.
+
+In the output we get from running make after applying the
+patch, we notice that there are much fewer files being
+compiled again as compared to the original make command. We see fewer
+leaving/entering commands.
+
+The make all-recursive command checks through all the relevant directories
+within the coreutils-7.6 (where we applied the patch) to see if based on the
+Makefile there was any change in the relevant source files after the patch
+and finds that the only change to make was in the src folder.
+
+What we essentially did after applying the patch was to recompile only the
+selected files that had been modified from the original.Note that we only make
+the patch and not install it because this way we have the broken version of ls
+in the coretutilsInstall/bin folder and the fixed version in the coreutils-7.6/src
+folder.
+
+We are then able to test the result out on the fixed and broken versions as
+follows:
+touch -t 8901241220 old
+touch new
+
+
