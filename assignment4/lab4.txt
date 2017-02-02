@@ -1,0 +1,127 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1504\cocoasubrtf600
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red0\green0\blue0;}
+{\*\expandedcolortbl;\csgray\c100000;\csgenericrgb\c0\c0\c0;\cssrgb\c0\c0\c0;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7239\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf2 First we download coreutils and install it.\
+\
+wget <link>\
+tar -xvzf coreutils-with-bug.tar.gz\
+\
+Create another folder for installation of coreutilsinstall\
+mkdir coreutilsinstall\
+cd coreutilsinstall\
+pwd\
+Copy the output of pwd\
+cd ../coreutils-with-bug\
+\
+./configure \'97prefix=<path_name_copied_from_pwd>\
+make\
+\
+MAKE FAILED WITH FOLLOWING ERROR:\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7239\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf2 \CocoaLigature0 In file included from utimecmp.c:41:\
+utimens.h:2: error: conflicting types for 'futimens'\
+/usr/include/sys/stat.h:374: note: previous declaration of 'futimens' was here\
+make[3]: *** [utimecmp.o] Error 1\
+make[3]: Leaving directory `/w/home.14/cs/ugrad/rishabhj/cs35l/assignment4/coreutils-with-bug/lib'\
+make[2]: *** [all] Error 2\
+make[2]: Leaving directory `/w/home.14/cs/ugrad/rishabhj/cs35l/assignment4/coreutils-with-bug/lib'\
+make[1]: *** [all-recursive] Error 1\
+make[1]: Leaving directory `/w/home.14/cs/ugrad/rishabhj/cs35l/assignment4/coreutils-with-bug'\
+make: *** [all] Error 2\
+\
+cd lib\
+vim utimecmp.h\
+The 25th line is #include <sys/stat.h>\
+vim usr/include/sys/stat.h\
+vim utimens.h\
+\
+We realise that a function named futimens had been declared in both stat.h and utimens.h. \
+Both these header files were included in a file which caused an error. The patch fixes this by changing the name of one of the functions.\
+\
+cd ..\
+wget <link of patch>\
+patch -p0 < coreutils.diff\
+The patch was successfully applied\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7239\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf2 \CocoaLigature1 ./configure \'97prefix=<path_name_copied_from_pwd>\CocoaLigature0 \
+make\
+After installation of patch, this time, make succeeded\
+make install\
+Now program has been installed in coreutilsinstall\
+\
+cd ../coreutilsinstall/bin\
+pwd\
+Copy the path for easy execution of ls \
+lpo=\'93$PWD\'94\
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 \expnd0\expndtw0\kerning0
+\CocoaLigature1 $ tmp=$(mktemp -d)\
+$ cd $tmp\
+$ touch -d '1918-11-11 11:00 GMT' wwi-armistice\
+$ touch now\
+$ sleep 1\
+$ touch now1\
+$ TZ=UTC0 $lpo/ls -lt --full-time wwi-armistice now now1\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf2 \kerning1\expnd0\expndtw0 \CocoaLigature0 -rw-r--r-- 1 rishabhj csugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice\
+-rw-r--r-- 1 rishabhj csugrad 0 2017-02-01 01:37:28.050639043 +0000 now1\
+-rw-r--r-- 1 rishabhj csugrad 0 2017-02-01 01:37:23.920480922 +0000 now\expnd0\expndtw0\kerning0
+\CocoaLigature1 \
+\pard\pardeftab720\partightenfactor0
+\cf2 $ cd\
+\
+The problem is that the file created in the distant past is treated as it was created in the future.\
+\
+gdb $lpo/ls\
+\
+run -lt \'97full-time wwi-armistice now now1\
+Bug is reproduced here\
+\
+Open ls.c in coreutils-with-bug/src/ls.c\
+On line 2952, there is a function sort_files\
+\
+stepping into it using gdb, we realise that a function called inside it named compare_mtime might\
+ be the issue.\
+\
+break compare_mtime\
+list\
+si\
+\
+When we step in, we see:\
+ \
+timespec_cmp(struct timespec a, struct timespec b)\
+\{\
+	int diff = a.tv_sec - b.tv_sec;\
+	return diff ? diff : a.tv_nsec - b.tv_nsec;\
+\}\
+\
+info args\
+info locals\
+\
+When a.tv_sec is extremely small, the value of diff overflows into an extremely large value, \
+hence causing the sorting bug we witnessed earlier. Hence, we rewrite the function so that it returns\
+-1 if A < B, 0 if A == B and 1 if A > B. This will successfully solve the problem.\
+\
+\pard\pardeftab720\partightenfactor0
+\cf0 diff -u coreutils-with-bug/lib/timespec.h coreutils-with-bug-n/lib/timespec.h > lab5.diff\cf2 \
+\
+rm -fr $tmp\
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 \kerning1\expnd0\expndtw0 \CocoaLigature0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7239\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf2 \
+\
+\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7239\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf2 \CocoaLigature1 \
+\
+}
