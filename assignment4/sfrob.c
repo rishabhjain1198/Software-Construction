@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<stdlib.h>
 
 int frobcmp(char const * first, char const * second)
 {
@@ -35,14 +36,14 @@ int main()
     char next = getchar();
     readErr();
     
-    int letterIterator = 0;
-    int allIterator = 0;
+    int i = 0;
+    int i = 0;
     while(curr != EOF && !ferror(stdin)) //Read file until EOF
     {
         
-        one[letterIterator] = curr; //Add letters to the one
+        one[i] = curr; //Add letters to the one
         //Constantly reallocate space for growing all
-        char* temp = realloc(one, (letterIterator+2)*sizeof(char));
+        char* temp = realloc(one, (i+2)*sizeof(char));
         if(temp != NULL)
         {
             //Make the one equal to the reallocated space
@@ -58,18 +59,18 @@ int main()
         
         if(curr == ' ') //Hit the end of the one
         {
-            all[allIterator] = one; //Add one to all list
+            all[i] = one; //Add one to all list
             //Constantly reallocate space for growing alllist
-            char** anotherOne = realloc(all, (allIterator+2)*sizeof(char*));
+            char** anotherOne = realloc(all, (i+2)*sizeof(char*));
             if(anotherOne != NULL)
             {
                 //Make all equal to reallocated space
                 all = anotherOne;
-                allIterator++;
+                i++;
                 //Set one back to empty by pointing it to other space
                 one = NULL;
                 one = (char*)malloc(sizeof(char));
-                letterIterator = -1; //-1 to bring back to 0 when summed later
+                i = -1; //-1 to bring back to 0 when summed later
             }
             else //Allocation error, print error and exit
             {
@@ -91,29 +92,29 @@ int main()
             }
             next = getchar();
             readErr();
-            letterIterator++;
+            i++;
             continue;
         }
         else if(next == EOF) //Add a space at the end if there isn't already one
         {
             curr = ' ';
-            letterIterator++;
+            i++;
             continue;
         }
         //increment our letter counter and get the next character
         curr = next;
         next = getchar();
         readErr();
-        letterIterator++;
+        i++;
         
     }
     
     
     //Sort the frobnicated all from our all list
-    qsort(all, allIterator, sizeof(char*), compareit);
+    qsort(all, i, sizeof(char*), compareit);
     
     //Output the all to STDOUT using putchar
-    for(size_t i = 0; i < allIterator; i++)
+    for(size_t i = 0; i < i; i++)
     {
         for(size_t j = 0; ;j++)
         {
@@ -130,7 +131,7 @@ int main()
         }
     }
     //De-allocate all the space taken up for the all
-    for(size_t i = 0; i < allIterator; i++)
+    for(size_t i = 0; i < i; i++)
     {
         free(all[i]);
     }
