@@ -23,115 +23,124 @@ int compareit(const void* l1, const void* l2)
     return frobcmp(x,y);
 }       //function to be passed in qsort
 
+//reading errors to be checked here
+void errCheck()
+{
+    if(ferror(stdin))
+    {
+        fprintf(stderr, "error in file");
+        exit(1);
+    }
+}
+
+
 int main()
 {
     
-    char* one;
-    char** all;
-    one = (char*)malloc(sizeof(char));
-    all = (char**)malloc(sizeof(char*));
-    
-    char curr = getchar();
-    readErr();
-    char next = getchar();
-    readErr();
-    
-    int i = 0;
-    int i = 0;
-    while(curr != EOF && !ferror(stdin)) //Read file until EOF
+    char* one; //This holds a single words
+    char** all; //This holds all the words
+    one = (char*)malloc(sizeof(char));  //allocating space for a single word
+    all = (char**)malloc(sizeof(char*));    //allocating space for all the words
+    char letter = getchar();
+    errCheck();
+    char nextLetter = getchar();
+    errCheck();
+    int letterIterator = 0;
+    int allIterator = 0;
+    while(letter != EOF && !ferror(stdin)) //Read file until EOF
     {
         
-        one[i] = curr; //Add letters to the one
+        one[letterIterator] = letter; //Add letters to the one
         //Constantly reallocate space for growing all
-        char* temp = realloc(one, (i+2)*sizeof(char));
+        char* temp = realloc(one, (letterIterator+2)*sizeof(char));
         if(temp != NULL)
         {
-            //Make the one equal to the reallocated space
+            //If no error is found, assign the words
             one = temp;
         }
-        else //Allocation error, print error and exit
+        else //Error was found, exit
         {
             free(one);
-            fprintf(stderr, "Error Allocation Memory!");
+            fprintf(stderr, "memory not allocated");
             exit(1);
         }
         
         
-        if(curr == ' ') //Hit the end of the one
+        if(letter == ' ') //One word has been completed
         {
-            all[i] = one; //Add one to all list
-            //Constantly reallocate space for growing alllist
-            char** anotherOne = realloc(all, (i+2)*sizeof(char*));
+            all[allIterator] = one; //Adding word to list
+            
+            char** anotherOne = realloc(all, (allIterator+2)*sizeof(char*));
             if(anotherOne != NULL)
             {
-                //Make all equal to reallocated space
                 all = anotherOne;
-                i++;
-                //Set one back to empty by pointing it to other space
+                allIterator++;
+                //Set one back to empty
                 one = NULL;
-                one = (char*)malloc(sizeof(char));
-                i = -1; //-1 to bring back to 0 when summed later
+                one = (char*)malloc(sizeof(char));  //allocating new space for the nextLetter word
+                letterIterator = -1;
             }
-            else //Allocation error, print error and exit
+            else
             {
                 free(all);
-                fprintf(stderr, "Error Allocation Memory!");
+                fprintf(stderr, "memory not allocated");
                 exit(1);
             }
         }
-        if(next == EOF && curr == ' ')
+       
+        if (letter == ' ' && nextLetter == ' ') //Ignore Extra Spaces
         {
-            break;
-        }
-        else if (curr == ' ' && next == ' ') //Ignore Extra Spaces
-        {
-            while(curr == ' ')
+            while(nextLetter == ' ')
             {
-                curr = getchar();
-                readErr();
+                nextLetter = getchar();
+                errCheck();
             }
-            next = getchar();
-            readErr();
-            i++;
+            letter = nextLetter;
+            nextLetter = getchar();
+            errCheck();
+            letterIterator++;
             continue;
         }
-        else if(next == EOF) //Add a space at the end if there isn't already one
+        else if(nextLetter == EOF)
         {
-            curr = ' ';
-            i++;
+            letter = ' ';
+            letterIterator++;
             continue;
         }
-        //increment our letter counter and get the next character
-        curr = next;
-        next = getchar();
-        readErr();
-        i++;
+    
+        letter = nextLetter;
+        nextLetter = getchar();
+        errCheck();
+        letterIterator++;
         
     }
     
     
-    //Sort the frobnicated all from our all list
-    qsort(all, i, sizeof(char*), compareit);
+    //Using qsort to sort the list in all
+    qsort(all, allIterator, sizeof(char*), compareit);
     
-    //Output the all to STDOUT using putchar
-    for(size_t i = 0; i < i; i++)
+    //time to output the sorted list
+    for(size_t i = 0; i < allIterator; i++)
     {
         for(size_t j = 0; ;j++)
         {
-            //EOF error checking
+            //checking if file is already at end when it isn't supposed to be, so it'll be an error
             if(putchar(all[i][j]) == EOF)
             {
-                fprintf(stderr, "Error while writing character!");
+                fprintf(stderr, "Writing error");
                 exit(1);
             }
+            //If space is found time, to end the word
             if(all[i][j] == ' ')
             {
                 break;
             }
         }
     }
-    //De-allocate all the space taken up for the all
-    for(size_t i = 0; i < i; i++)
+   
+    
+    //giving back memory
+    for(size_t i = 0; i < allIterator; i++)
     {
         free(all[i]);
     }
