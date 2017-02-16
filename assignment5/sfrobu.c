@@ -4,6 +4,7 @@
 #include<sys/stat.h>
 
 int comparison = 0;
+
 //Function to compare unfrobnicated words
 int frobcmp(char const *a, char const *b)
 {
@@ -15,7 +16,7 @@ int frobcmp(char const *a, char const *b)
   }
 }
 
-//Function to use within qsort without having to cast
+//Function to use while sorting
 int cmp(const void* in1, const void* in2)
 {
   //We cast to pointers to pointers since thats what our
