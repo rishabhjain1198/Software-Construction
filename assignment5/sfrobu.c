@@ -1,203 +1,205 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<unistd.h>
-#include<sys/stat.h>
+/*
+ *  sfrobu
+ */
 
-int comparison = 0;
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <ctype.h>
 
-//Function to compare unfrobnicated words
-int frobcmp(char const *a, char const *b)
+#define SPACE       ' '
+
+int flagged;
+
+char decrypt(const char c);
+int  frobcmp(char const* a, char const* b);
+int  cmpWrapper(const void* a, const void* b);
+void checkMemErr(void* ptr);
+void checkIOErr(ssize_t ret);
+void reportErr(const char* msg);
+void strWrite(const char* str);
+size_t initLinebuf(char** linebuf, char* buf, size_t size);
+
+int main(int argc, char* argv[])
 {
-  for(;; a++, b++) //Loop to look at entire words
-  {
-	if(*a == ' ' && *b == ' ') { return 0; }
-	else if (*a == ' ' || ((*a^42) < (*b^42))) { return -1; }
-	else if (*b == ' ' || ((*a^42) > (*b^42))) { return 1; }
-  }
-}
-
-//Function to use while sorting
-int cmp(const void* in1, const void* in2)
-{
-  //We cast to pointers to pointers since thats what our
-  //words array holds
-  const char* a = *(const char**)in1;
-  const char* b = *(const char**)in2;
-  comparison++;
-  return frobcmp(a,b);
-}
-
-//Function to check for reading error
-void readErr(ssize_t state)
-{
-  if(state < 0)     //this means that there was an error, count of bytes is less than 0
-  {
-	fprintf(stderr, "Reading error!");
-	exit(1);
-  }
-}
-
-
-int main(void)
-{
-  struct stat fileStat;
+    /* Declare Variables*/
+    flagged = 0;
+    if(argc > 1)
+    {
+        if(strncmp(argv[1],"-f", 2) == 0)
+        {
+            flagged = 1;
+        }
+    }
     
-    /*
-  if(fstat(0,&fileStat) < 0) //Error with fstat
-  {
-	fprintf(stderr, "Error with fstat!");
-	exit(1);
-  }
+    
+    int (* cmp) (const void*, const void*);
+    char* input, * input2, ** linebuf, * line, curChar;
+    char readbuf[2];
+    size_t lineNum, lineSize, bufferSize, i, fileSize;
+    int isEOF, isSpace;
+    ssize_t ret;
+    struct stat buf;
+    
+    /* Initialize variables */
+    bufferSize = 0, lineNum = 0, lineSize = 0, isEOF = 0;
+    
+    /* Set frobcmp pointer */
+    cmp = &cmpWrapper;
+    
+    /* File Information */
+    ret = fstat(STDIN_FILENO, &buf);
+    checkIOErr(ret);
+    fileSize = buf.st_size + 1;
+    
+    /* Setup Initial Buffer */
+    input = (char*) malloc(sizeof(char) * fileSize);
+    checkMemErr(input);
+    line = input;
+    
+    /*                                                           *
+     * Read from Input
      */
+    while ( ! isEOF)
+    {
+        ret = read(STDIN_FILENO, readbuf, 1);
+        checkIOErr(ret);
+        curChar = readbuf[0];
+        isSpace = curChar == SPACE;
+        isEOF = ! ret;
+        if ( ! lineSize && isSpace)
+            continue;
+        /* Resize buffer */
+        if (bufferSize == fileSize)
+        {
+            fileSize *= 2;
+            input2 = (char*) realloc(input, sizeof(char) * fileSize);
+            checkMemErr(input2);
+            input = input2;
+        }
+        
+        /* Store the current character */
+        if ( ! isEOF)
+        {
+            input[bufferSize++] = curChar;
+            lineSize++;
+            if ( ! isSpace)
+                continue;
+        }
+        else
+        {
+            if ( ! bufferSize)
+            {
+                free(input);
+                return 0;         /* An Empty file or a file with only spaces */
+            }
+            /* Append a space if there is none */
+            if (input[bufferSize-1] != SPACE)
+                input[bufferSize++] = SPACE;
+            if ( ! lineSize)
+                break;
+        }
+        
+        /* New Line */
+        lineNum++;
+        lineSize = 0;
+    }
+    linebuf = (char**) malloc(sizeof(char*) * lineNum);
+    checkMemErr(linebuf);
     
-  char **words;
-  char *fileArray;
-  size_t wordsIterator = 0;
-  if(S_ISREG(fileStat.st_mode))
-  {
-	fileArray = (char*)malloc(fileStat.st_size * sizeof(char));
-	int pointerCounter = 0;
-	ssize_t state = read(0, fileArray, fileStat.st_size);
-	int count = 1;
-	if(state > 0) //No error reading
-	{
-	  for(size_t i = 0; i < fileStat.st_size; i+=count)
-	  {
-		count = 1;
-		if(i == fileStat.st_size - 1) //Always set the end to a space
-		{
-		  fileArray[i] = ' ';
-		}
-		if(fileArray[i] == ' ')
-		{
-		  for(size_t j = i; fileArray[j] != ' '; j++)
-		  {
-			count++;
-		  }
-		  pointerCounter++;
-		}
-	  }
-	}
-	words = (char**)malloc(pointerCounter * sizeof(char*));
-	int flag = 0;
-	for(size_t i = 0; i < fileStat.st_size; i++)
-	{
-	  if(flag == 0 && fileArray[i] != ' ')
-	  {
-		words[wordsIterator] = &fileArray[i];
-		wordsIterator++;
-		flag = 1;
-	  }
-	  else if(flag == 1 && fileArray[i] == ' ')
-	  {
-		flag = 0;
-	  }
-	}
-  }
-  else
-  {
-	words = (char**)malloc(sizeof(char*));
-  }
+    if (lineNum != initLinebuf(linebuf, input, bufferSize))
+        reportErr("Wrong Line Number.");
+    
+    /* Sort the input */
+    qsort(linebuf, lineNum, sizeof(char*), cmp);
+    
+    /* Output results */
+    for (i = 0; i < lineNum; i++)
+        strWrite(linebuf[i]);
+    
+    /* Free input array */
+    free(linebuf);
+    free(input);
 
-  char* word; //Holds one word at a time (delimited by spaces)
-  word = (char*)malloc(sizeof(char));
-  //curr and next act as current and next iterators to use for noting
-  //EOF and auto adding spaces at the end of files
-  char curr[1];
-  ssize_t currState = read(0, curr, 1);
-  readErr(currState);
-  char next[1];
-  ssize_t nextState = read(0, next, 1);
-  readErr(nextState);
-  int letterIterator = 0;
-  while(currState > 0)
-  {
-	word[letterIterator] = curr[0]; //Add letters to the word
-	//Constantly reallocate space for growing words
-	char* temp = realloc(word, (letterIterator+2)*sizeof(char));
-	if(temp != NULL)
-	{
-	  //Make the word equal to the reallocated space
-	  word = temp;
-	}
-	else //Allocation error, print error and exit
-	{
-	  free(word);
-	  fprintf(stderr, "Error Allocation Memory!");
-	  exit(1);
-	}
+    return 0;
+}
 
-	if(curr[0] == ' ') //Hit the end of the word
-	{
-	  words[wordsIterator] = word; //Add word to words list
-	  //Constantly reallocate space for growing wordslist
-	  char** anotherOne = realloc(words, (wordsIterator+2)*sizeof(char*));
-	  if(anotherOne != NULL)
-	  {
-		//Make words equal to reallocated space
-		words = anotherOne;
-		wordsIterator++;
-		//Set word back to empty by pointing it to other space
-		word = NULL;
-		word = (char*)malloc(sizeof(char));
-		letterIterator = -1; //-1 to bring back to 0 when summed later
-	  }
-	  else //Allocation error, print error and exit
-	  {
-		free(words);
-		fprintf(stderr, "Error Allocation Memory!");
-		exit(1);
-	  }
-	}
-	if(nextState == 0 && curr[0] == ' ')
-	{
-	  break;
-	}
-	else if (curr[0] == ' ' && next[0] == ' ') //Ignore Extra Spaces
-	{
-	  while(curr[0] == ' ')
-	  {
-		currState = read(0,curr,1);
-		readErr(currState);
-	  }
-	  nextState = read(0,next,1);
-	  readErr(nextState);
-	  letterIterator++;
-	  continue;
-	}
-	else if(nextState == 0) //Add a space at the end if there isn't already one
-	{
-	  curr[0] = ' ';
-	  letterIterator++;
-	  continue;
-	}
-	//increment our letter counter and get the next character
-	curr[0] = next[0];
-	nextState = read(0, next, 1);
-	readErr(nextState);
-	letterIterator++;
-  }
-  //Sort the frobnicated words from our words list
-  qsort(words, wordsIterator, sizeof(char*), cmp);
-  //Output the words to STDOUT using write
-  for(size_t i = 0; i < wordsIterator; i++)
-  {
-	long wordSize = 0;
-	for(size_t j = 0; ;j++)
-	{
-	  wordSize++;
-	  if(words[i][j] == ' ')
-	  {
-		break;
-	  }
-	}
-	if(write(1,words[i], wordSize) == 0)
-	{
-	  fprintf(stderr, "Error while writing!");
-	  exit(1);
-	}
-  }
-  fprintf(stderr, "Comparisons: %i\n", comparison);
-  free(words);
-  exit(0);
+/* Report error */
+inline
+void reportErr(const char* msg)
+{
+    fprintf(stderr, "%s Error\n", msg);
+    exit(1);
+}
+
+/* Check IO Error */
+inline
+void checkIOErr(ssize_t ret)
+{
+    if (ret < 0)      reportErr("IO");
+}
+
+/* Check if malloc / realloc allocates memory successfully */
+inline
+void checkMemErr(void* ptr)
+{
+    if (ptr == NULL)    reportErr("Memory Allocation");
+}
+
+/*  Decrypt each character */
+inline
+char decrypt(const char c)
+{
+    if(flagged == 1){
+         return toupper(c^42);
+    }
+  
+    return c;
+}
+
+/* Wrapper function */
+inline
+int cmpWrapper(const void* a, const void* b)
+{
+    return frobcmp(*((const char**) a), *((const char**) b));
+}
+
+void strWrite(const char* str)
+{
+    ssize_t ret;
+    for (;;)
+    {
+        ret = write(STDOUT_FILENO, str, 1);
+        checkIOErr(ret);
+        if (*str++ == SPACE)
+            return;
+    }
+}
+
+size_t initLinebuf(char** linebuf, char* buf, size_t size)
+{
+    size_t i, lineNum;
+    char* line = buf;
+    for (i = 0, lineNum = 0; i < size; i++)
+    {
+        if (buf[i] == SPACE)
+        {
+            linebuf[lineNum++] = line;
+            line = buf + i + 1;
+        }
+    }
+    return lineNum;
+}
+
+/* Compare two frobnicated characters */
+int frobcmp(char const* a, char const* b)
+{
+    for ( ; *a == *b; a++, b++)
+        if (*a == SPACE)
+            return 0;
+    return ((decrypt(*a) < (decrypt(*b)) ? -1 : 1));
+    
 }
