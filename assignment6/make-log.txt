@@ -49,8 +49,8 @@ sys	0m0.249s
 mv 4-test.ppm.tmp 4-test.ppm
 time ./srt 8-test.ppm >8-test.ppm.tmp
 
-real	0m17.335s
-user	0m50.021s
+real	0m8.335s
+user	0m56.021s
 sys	0m0.324s
 mv 8-test.ppm.tmp 8-test.ppm
 for file in 1-test.ppm 2-test.ppm 4-test.ppm 8-test.ppm; do \
