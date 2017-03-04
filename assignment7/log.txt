@@ -1,0 +1,80 @@
+Name: Rishabh Jain
+UID: 604817863
+
+The system I would be trying to access is also owned by me in this lab session.
+ I loaded two different operating systems on two different machines by 
+booting up Ubuntu from flash disks. Since root access is required for the 
+commands I'm about to execute, using SEASNet lab machines will not be 
+optimal.
+
+First we have to check whether we have openssh installed correctly or not:
+
+dpkg --get-selections | grep openssh
+
+Seeing that everything is in order, including the openssh-server module,
+I proceed forward to start the server for the other machine to access:
+
+ssh-keygen
+
+This is done to generate and authenticate RSA keys for whenever someone tries
+to SSH into the machine I's host. At first, I don't set any password for
+this key.
+
+sudo useradd -d /home/machine2/ -m machine2
+
+This created added a user to the operating system with username machine2
+and also created a directory machine2 within home.
+
+sudo passwd machine2
+
+This command is used to set the password for the user machine2. Now I change
+into machine2's user directory.
+
+cd /home/machine2
+
+Now I have to create an SSH directory to store the information from the 
+RSA keys (public and private) to the hosts. It is important to make sure
+machine2 is the owner of the newly created files since machine2 should be
+allowed to log in and create new files as they please.
+
+sudo mkdir .ssh
+sudo chown -R machine2 .ssh
+sudo chmod 700 .ssh
+
+By using ifconfig, I found the ip address of my own machine:
+
+192.232.112.73
+
+Now I switch to machine2 and try to login as a client for machine1.
+
+ssh-copy-id -i machine2@192.232.112.73
+
+This adds machine2's public key to the ssh folder which we had created
+earlier.
+
+ssh-add 
+
+This command alsong with ssh-agent saves the password required to log into
+the server in the ssh folder. Thus, the identity of the user is verified
+on the basis of the RSA keys and machine2 won't have to type the password
+in every single time they log in.
+
+ssh machine2@192.232.112.73
+
+I've successfully logged into machine1. Now I try to create a file and see
+if that is noticable on machine1's interface.
+
+touch hello_world.txt
+
+By using ls on machine1's terminal, I could see that hello_world.txt was
+successfully created.
+
+Now I try to log in with the capability to open other programs.
+
+ssh -X machine2@192.232.112.73
+
+Login was successful, and now I try to open Firefox.
+
+firefox
+
+Sure enough, firefox opens up.
