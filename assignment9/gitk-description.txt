@@ -1,0 +1,23 @@
+Starting from the top left and going in clockwise direction:
+
+There is a windows which shows all the commits and merges in
+a tree structure. We can view all the different branches, along
+with the commit messages which were provided when the commits 
+were presumably made.
+
+There is a parallel list of authors which indicates who made 
+which commit. Their email is also provided.
+
+Another window contains the exact date and time when the parallel
+commit was made.
+
+The largest window shows all the files which were affected by the 
+highlighted commit.
+
+The final window shows all the details about the highlighted commit.
+It shows us the exact changes made to each file in diff format,
+along with information about the person who made the 
+commit (name and email), as well as showing us all the children
+and branches of this commit. The changelog is also available to
+inspect. We can also see the SHA1 ID of the selected commit.
+

@@ -1,0 +1,60 @@
+I checkout a branch of the v3.0 diffutils by:
+git checkout v3.0 -b quote
+
+Now I apply the patch that I generated in the lab:
+patch -p1 < ../quote-3.0-patch.txt
+
+After doing git status, I can see that the required .c files were
+successfully modified. I open them one by one in emacs and use
+C-x 4 a to create changelogs for all of the files.
+
+I add all the newly changed files and commit the changes:
+
+git add .
+git commit -F Changelog
+
+I generate a formatted patch by using:
+git format-patch -1 —stdout > formatted-patch.txt
+
+I try this patch out by checking out another branch of v3.0:
+
+git checkout v3.0 -b tester
+
+git am < ../formatted-patch.txt
+
+Now I run the commands specified in the README to build the executable:
+./bootstrap
+./configure
+make
+make check
+make distdir
+
+This creates a new directory that contains a version of diffutils based on
+the formatted patch we had earlier created. We can view the changelog using 
+git log, and see that the changes are the same as we had done using emacs
+earlier.
+
+gitk was not installed in the SEASnet machine, so I decided
+to try it out on my local machine.
+
+I logout of SEASnet and clone a copy of the emacs source 
+repo into my local machine to run gitk on:
+
+git clone https://git.savannah.gnu.org/git/emacs.git
+
+I change directory into it:
+
+cd emacs
+
+After installing gitk by updating git on my machine, I run gitk 
+in this directory:
+
+gitk
+
+A window opens showing me all sorts of details about git related
+to this directory. I scroll through the merge dates until I get to one
+which is the newest, but not newer than 2015-01-25.
+
+The merge was made by Barry O’Reilly on 2013-10-19 and the
+file src/eval.c was modified to fix iteration over specpdl stack.
+
